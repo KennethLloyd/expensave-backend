@@ -1,5 +1,5 @@
-# express-mongoose-api
-Simple NodeJS Express App with Mongoose as ODM
+# expensave-backend
+Express API for Expensave
 
 1. Install dependencies
 ```sh
