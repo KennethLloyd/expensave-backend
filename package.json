@@ -1,7 +1,7 @@
 {
   "name": "expensave-backend",
   "version": "1.0.0",
-  "description": "Express API for Expensave",
+  "description": "Backend API for Expensave built with NodeJS, ExpressJS, and Mongoose",
   "main": "index.js",
   "scripts": {
     "start": "NODE_ENV=production node src/index.js",
