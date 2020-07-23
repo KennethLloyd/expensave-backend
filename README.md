@@ -1,5 +1,5 @@
 # expensave-backend
-Express API for Expensave
+Backend API for Expensave built with NodeJS, ExpressJS, and Mongoose
 
 1. Install dependencies
 ```sh
