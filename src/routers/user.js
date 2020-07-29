@@ -6,6 +6,7 @@ const router = new express.Router();
 
 router.post('/users', userController.signUp);
 router.post('/users/login', userController.logIn);
+router.post('/users/login/google', userController.logInWithGoogle);
 router.post('/users/logout', authenticate, userController.logOut);
 router.post('/users/logoutAll', authenticate, userController.logOutAllDevices);
 router.patch('/users/me', authenticate, userController.editProfile);
