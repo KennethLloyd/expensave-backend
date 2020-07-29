@@ -1,3 +1,5 @@
+const { OAuth2Client } = require('google-auth-library');
+const config = require('config');
 const { User } = require('../models');
 
 /**
@@ -44,6 +46,74 @@ const logIn = async (req, res) => {
     const token = await user.generateAuthToken();
 
     return res.send({ user, token });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).send({ error: 'Internal Server Error' });
+  }
+};
+
+/**
+@api {post} /users/login/google Log In with Google
+@apiVersion 1.0.0
+@apiName LogInWithGoogle
+@apiGroup User
+
+@apiParamExample {json} Request-Example:
+{
+	 "googleToken": "eyJhkjdsqqqffsd88287.eydhhd686dsaqqxsfed121"
+}
+
+@apiSuccess {Object} user User details
+@apiSuccess {String} token Auth token
+@apiSuccessExample {json} Success-Response:
+HTTP/1.1 200 OK
+{
+    "user": {
+        "_id": "5f18e3c80e5cb76879bd768c",
+        "firstName": "Minnie",
+        "lastName": "Kim",
+        "email": "minnie@cube.com",
+        "createdAt": "2020-07-23T01:11:36.416Z",
+        "updatedAt": "2020-07-23T01:27:15.894Z",
+        "__v": 3
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZjE4ZTNjODBlNWNiNzY4NzliZDc2OGMiLCJpYXQiOjE1OTU0Njc2MzV9.w2W6mWbsYjZv9DeGkignvBJHsK3GTsMNJsZMe3t_hpM"
+}
+*/
+
+const logInWithGoogle = async (req, res) => {
+  try {
+    const { googleToken } = req.body;
+    const CLIENT_ID = config.get('googleClientID');
+    const client = new OAuth2Client(CLIENT_ID);
+    let user = null;
+
+    const verify = async () => {
+      const ticket = await client.verifyIdToken({
+        idToken: googleToken,
+        audience: CLIENT_ID,
+      });
+      const payload = ticket.getPayload();
+
+      user = await User.findByCredentials(payload['email'], payload['sub']);
+
+      if (!user) {
+        // create new account
+        user = new User({
+          firstName: payload['given_name'],
+          lastName: payload['family_name'],
+          email: payload['email'],
+          password: payload['sub'],
+        });
+
+        await user.save();
+      }
+
+      const token = await user.generateAuthToken();
+      return res.send({ user, token });
+    };
+
+    verify().catch(console.error);
   } catch (e) {
     console.log(e);
     return res.status(500).send({ error: 'Internal Server Error' });
@@ -216,7 +286,7 @@ const editProfile = async (req, res) => {
 
     await req.user.save();
 
-    return res.send({'user': req.user});
+    return res.send({ user: req.user });
   } catch (e) {
     return res.status(500).send({ error: 'Internal Server Error' });
   }
@@ -253,7 +323,7 @@ const deleteAccount = async (req, res) => {
   try {
     await req.user.remove();
 
-    res.send({'user': req.user});
+    res.send({ user: req.user });
   } catch (e) {
     res.status(400).send({ error: 'Internal Server Error' });
   }
@@ -261,6 +331,7 @@ const deleteAccount = async (req, res) => {
 
 module.exports = {
   logIn,
+  logInWithGoogle,
   signUp,
   logOut,
   logOutAllDevices,
