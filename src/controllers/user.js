@@ -1,4 +1,5 @@
 const { OAuth2Client } = require('google-auth-library');
+const axios = require('axios');
 const config = require('config');
 const { User } = require('../models');
 
@@ -114,6 +115,57 @@ const logInWithGoogle = async (req, res) => {
     };
 
     verify().catch(console.error);
+  } catch (e) {
+    console.log(e);
+    return res.status(500).send({ error: 'Internal Server Error' });
+  }
+};
+
+const logInWithFacebook = async (req, res) => {
+  try {
+    const { fbToken, firstName, lastName, email } = req.body;
+    const AppID = config.get('fbAppID');
+    const AppSecret = config.get('fbAppSecret');
+    let response = null;
+    let user = null;
+
+    response = await axios.get(
+      `https://graph.facebook.com/oauth/access_token?client_id=${AppID}&client_secret=${AppSecret}&grant_type=client_credentials`,
+    );
+
+    const appToken = response.data.access_token;
+
+    response = await axios.get(
+      `https://graph.facebook.com/debug_token?input_token=${fbToken}&access_token=${appToken}`,
+    );
+
+    const { is_valid } = response.data.data;
+
+    if (is_valid) {
+      const { user_id } = response.data.data;
+
+      user = await User.findByCredentials(email, user_id);
+
+      if (!user) {
+        // create new account
+        user = new User({
+          firstName,
+          lastName,
+          email,
+          password: user_id,
+        });
+
+        console.log(user);
+
+        await user.save();
+      }
+
+      const token = await user.generateAuthToken();
+      return res.send({ user, token });
+    } else {
+      // invalid token
+      return res.status(400).send({ error: 'Invalid credentials' });
+    }
   } catch (e) {
     console.log(e);
     return res.status(500).send({ error: 'Internal Server Error' });
@@ -332,6 +384,7 @@ const deleteAccount = async (req, res) => {
 module.exports = {
   logIn,
   logInWithGoogle,
+  logInWithFacebook,
   signUp,
   logOut,
   logOutAllDevices,
