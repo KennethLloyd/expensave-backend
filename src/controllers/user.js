@@ -114,7 +114,7 @@ const logInWithGoogle = async (req, res) => {
       return res.send({ user, token });
     };
 
-    verify().catch(console.error);
+    verify().catch(console.error());
   } catch (e) {
     console.log(e);
     return res.status(500).send({ error: 'Internal Server Error' });
@@ -186,8 +186,6 @@ const logInWithFacebook = async (req, res) => {
           email,
           password: user_id,
         });
-
-        console.log(user);
 
         await user.save();
       }
