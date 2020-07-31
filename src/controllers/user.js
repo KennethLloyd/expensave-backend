@@ -1,4 +1,5 @@
 const { OAuth2Client } = require('google-auth-library');
+const axios = require('axios');
 const config = require('config');
 const { User } = require('../models');
 
@@ -114,6 +115,89 @@ const logInWithGoogle = async (req, res) => {
     };
 
     verify().catch(console.error);
+  } catch (e) {
+    console.log(e);
+    return res.status(500).send({ error: 'Internal Server Error' });
+  }
+};
+
+/**
+@api {post} /users/login/fb Log In with Facebook
+@apiVersion 1.0.0
+@apiName LogInWithFacebook
+@apiGroup User
+
+@apiParamExample {json} Request-Example:
+{
+	 "fbToken":"EAAQ1zcVRuWIBAP6lHnGNTXMyduPV4HZA2",
+	 "firstName": "Yuqi",
+	 "lastName": "Song",
+	 "email": "yuqi@cube.com"
+}
+
+@apiSuccess {Object} user User details
+@apiSuccess {String} token Auth token
+@apiSuccessExample {json} Success-Response:
+HTTP/1.1 200 OK
+{
+    "user": {
+        "_id": "5f18e3c80e5cb76879bd768c",
+        "firstName": "Yuqi",
+        "lastName": "Song",
+        "email": "yuqi@cube.com",
+        "createdAt": "2020-07-23T01:11:36.416Z",
+        "updatedAt": "2020-07-23T01:27:15.894Z",
+        "__v": 3
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZjE4ZTNjODBlNWNiNzY4NzliZDc2OGMiLCJpYXQiOjE1OTU0Njc2MzV9.w2W6mWbsYjZv9DeGkignvBJHsK3GTsMNJsZMe3t_hpM"
+}
+*/
+
+const logInWithFacebook = async (req, res) => {
+  try {
+    const { fbToken, firstName, lastName, email } = req.body;
+    const AppID = config.get('fbAppID');
+    const AppSecret = config.get('fbAppSecret');
+    let response = null;
+    let user = null;
+
+    response = await axios.get(
+      `https://graph.facebook.com/oauth/access_token?client_id=${AppID}&client_secret=${AppSecret}&grant_type=client_credentials`,
+    );
+
+    const appToken = response.data.access_token;
+
+    response = await axios.get(
+      `https://graph.facebook.com/debug_token?input_token=${fbToken}&access_token=${appToken}`,
+    );
+
+    const { is_valid } = response.data.data;
+
+    if (is_valid) {
+      const { user_id } = response.data.data;
+
+      user = await User.findByCredentials(email, user_id);
+
+      if (!user) {
+        // create new account
+        user = new User({
+          firstName,
+          lastName,
+          email,
+          password: user_id,
+        });
+
+        console.log(user);
+
+        await user.save();
+      }
+
+      const token = await user.generateAuthToken();
+      return res.send({ user, token });
+    } else {
+      // invalid token
+      return res.status(400).send({ error: 'Invalid credentials' });
+    }
   } catch (e) {
     console.log(e);
     return res.status(500).send({ error: 'Internal Server Error' });
@@ -249,9 +333,9 @@ const logOutAllDevices = async (req, res) => {
 
 @apiParamExample {json} Request-Example:
 {
-	"firstName": "Minnie",
-	"lastName": "Kim",
-	"email": "minnie@cube.com"
+	"firstName": "Soojin",
+	"lastName": "Seo",
+	"email": "soojin@cube.com"
 }
 
 @apiSuccess {Object} user User details
@@ -260,9 +344,9 @@ HTTP/1.1 200 OK
 {
     "user": {
         "_id": "5f18e3c80e5cb76879bd768c",
-        "firstName": "Minnie",
-        "lastName": "Kim",
-        "email": "minnie@cube.com",
+        "firstName": "Soojin",
+        "lastName": "Seo",
+        "email": "soojin@cube.com",
         "createdAt": "2020-07-23T01:11:36.416Z",
         "updatedAt": "2020-07-23T01:55:03.615Z",
         "__v": 9
@@ -309,9 +393,9 @@ HTTP/1.1 200 OK
 {
     "user": {
         "_id": "5f18d3e942e2bd44bcf1dd1f",
-        "firstName": "Miyeon",
-        "lastName": "Cho",
-        "email": "miyeon@cube.com",
+        "firstName": "Shuhua",
+        "lastName": "Yeh",
+        "email": "shuhua@cube.com",
         "createdAt": "2020-07-23T00:03:53.910Z",
         "updatedAt": "2020-07-23T01:59:24.117Z",
         "__v": 4
@@ -332,6 +416,7 @@ const deleteAccount = async (req, res) => {
 module.exports = {
   logIn,
   logInWithGoogle,
+  logInWithFacebook,
   signUp,
   logOut,
   logOutAllDevices,
