@@ -39,6 +39,10 @@ const userSchema = new mongoose.Schema(
         }
       },
     },
+    isNative: {
+      type: Boolean,
+      default: true,
+    },
     tokens: [
       {
         token: {
