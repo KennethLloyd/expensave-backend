@@ -105,6 +105,7 @@ const logInWithGoogle = async (req, res) => {
           lastName: payload['family_name'],
           email: payload['email'],
           password: payload['sub'],
+          isNative: false,
         });
 
         await user.save();
@@ -185,6 +186,7 @@ const logInWithFacebook = async (req, res) => {
           lastName,
           email,
           password: user_id,
+          isNative: false,
         });
 
         await user.save();
