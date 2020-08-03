@@ -1,6 +1,7 @@
 const { OAuth2Client } = require('google-auth-library');
 const axios = require('axios');
 const config = require('config');
+const { format, add } = require('date-fns');
 const { User } = require('../models');
 
 /**
@@ -255,6 +256,28 @@ const signUp = async (req, res) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+
+    if (!user) {
+      return res.status(404).send({ error: 'Email does not exist' });
+    }
+
+    user.resetPasswordToken = await user.generateResetToken();
+    user.resetPasswordExpiry = format(
+      add(new Date(), { hours: 1 }),
+      'yyyy-MM-dd HH:mm',
+    );
+
+    await user.save();
+    res.send({ message: 'Password reset email successfully sent!' });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).send({ error: 'Internal Server Error' });
+  }
+};
+
 /**
 @api {post} /users/logout Log out User
 @apiVersion 1.0.0
@@ -418,6 +441,7 @@ module.exports = {
   logInWithGoogle,
   logInWithFacebook,
   signUp,
+  forgotPassword,
   logOut,
   logOutAllDevices,
   editProfile,
