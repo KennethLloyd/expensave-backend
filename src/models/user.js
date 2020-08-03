@@ -43,6 +43,14 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    resetPasswordToken: {
+      type: String,
+      default: '',
+    },
+    resetPasswordExpiry: {
+      type: String,
+      default: '',
+    },
     tokens: [
       {
         token: {
@@ -65,6 +73,14 @@ userSchema.methods.generateAuthToken = async function () {
 
   user.tokens = [...user.tokens, { token }]; // add token object to array of objects of tokens
   await user.save();
+
+  return token;
+};
+
+userSchema.methods.generateResetToken = async function () {
+  const user = this;
+
+  const token = jwt.sign({ _id: user._id.toString() }, config.get('jwtSecret'));
 
   return token;
 };
