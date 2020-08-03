@@ -1,8 +1,28 @@
 const { OAuth2Client } = require('google-auth-library');
+const { format, add } = require('date-fns');
 const axios = require('axios');
 const config = require('config');
-const { format, add } = require('date-fns');
+const nodemailer = require('nodemailer');
 const { User } = require('../models');
+
+const getEmailTransporter = async () => {
+  const testAccount = await nodemailer.createTestAccount();
+
+  // create reusable transporter object using the default SMTP transport
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    secure: true, // true for 465, false for other ports
+    auth: {
+      user: config.get('nodemailerEmail'),
+      pass: config.get('nodemailerPassword'),
+    },
+    tls: {
+      rejectUnauthorized: false,
+    },
+  });
+
+  return transporter;
+};
 
 /**
 @api {post} /users/login Log In User
@@ -271,6 +291,18 @@ const forgotPassword = async (req, res) => {
     );
 
     await user.save();
+
+    const emailer = await getEmailTransporter();
+
+    // send mail with defined transport object
+    await emailer.sendMail({
+      from: `"Expensave" <${config.get('nodemailerEmail')}>`, // sender address
+      to: 'kenaroza@gmail.com', // list of receivers
+      subject: 'Hello ✔', // Subject line
+      text: 'Hello world?', // plain text body
+      html: '<b>Hello world?</b>', // html body
+    });
+
     res.send({ message: 'Password reset email successfully sent!' });
   } catch (e) {
     console.log(e);
