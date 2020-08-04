@@ -1,7 +1,26 @@
 const { OAuth2Client } = require('google-auth-library');
+const { format, add } = require('date-fns');
 const axios = require('axios');
 const config = require('config');
+const nodemailer = require('nodemailer');
 const { User } = require('../models');
+
+const getEmailTransporter = async () => {
+  // create reusable transporter object using the default SMTP transport
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    secure: true, // true for 465, false for other ports
+    auth: {
+      user: config.get('nodemailerEmail'),
+      pass: config.get('nodemailerPassword'),
+    },
+    tls: {
+      rejectUnauthorized: false,
+    },
+  });
+
+  return transporter;
+};
 
 /**
 @api {post} /users/login Log In User
@@ -256,6 +275,108 @@ const signUp = async (req, res) => {
 };
 
 /**
+@api {post} /users/forgot Forgot Password
+@apiVersion 1.0.0
+@apiName ForgotPassword
+@apiGroup User
+
+@apiParamExample {json} Request-Example:
+{
+    "email": "miyeon@cube.com"
+}
+
+@apiSuccess {String} message Response message
+@apiSuccessExample {json} Success-Response:
+HTTP/1.1 200 OK
+{
+    "message": "Password reset email successfully sent!"
+}
+*/
+
+const forgotPassword = async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.body.email });
+
+    if (!user) {
+      return res.status(404).send({ error: 'Email does not exist' });
+    }
+
+    user.resetPasswordToken = await user.generateResetToken();
+    user.resetPasswordExpiry = format(
+      add(new Date(), { hours: 1 }),
+      'yyyy-MM-dd HH:mm',
+    );
+
+    await user.save();
+
+    const emailer = await getEmailTransporter();
+
+    // send mail with defined transport object
+    await emailer.sendMail({
+      from: `"Expensave" <${config.get('nodemailerEmail')}>`, // sender address
+      to: 'kenaroza@gmail.com', // list of receivers
+      subject: 'Reset your password', // Subject line
+      html: `<p>Hi ${
+        user.firstName
+      },</p><p>Please follow this link to reset your password: ${config.get(
+        'frontendURL',
+      )}/reset-password/${
+        user.resetPasswordToken
+      }. This link is valid for only an hour.</p><p>Thanks!</p>`, // html body
+    });
+
+    res.send({ message: 'Password reset email successfully sent!' });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).send({ error: 'Internal Server Error' });
+  }
+};
+
+/**
+@api {post} /users/reset/:token Reset Password
+@apiVersion 1.0.0
+@apiName ResetPassword
+@apiGroup User
+
+@apiParamExample {json} Request-Example:
+{
+    "password": "54321aA!"
+}
+
+@apiSuccess {String} message Response message
+@apiSuccessExample {json} Success-Response:
+HTTP/1.1 200 OK
+{
+    "message": "Password changed successfully!"
+}
+*/
+
+const resetPassword = async (req, res) => {
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: req.params.token,
+      resetPasswordExpiry: { $gt: format(new Date(), 'yyyy-MM-dd HH:mm') },
+    });
+
+    if (!user) {
+      return res
+        .status(404)
+        .send({ error: 'Password reset token is invalid or has expired' });
+    }
+
+    user.password = req.body.password;
+    user.resetPasswordToken = '';
+    user.resetPasswordExpiry = '';
+
+    await user.save();
+    res.send({ message: 'Password changed successfully!' });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).send({ error: 'Internal Server Error' });
+  }
+};
+
+/**
 @api {post} /users/logout Log out User
 @apiVersion 1.0.0
 @apiName LogOut
@@ -418,6 +539,8 @@ module.exports = {
   logInWithGoogle,
   logInWithFacebook,
   signUp,
+  forgotPassword,
+  resetPassword,
   logOut,
   logOutAllDevices,
   editProfile,

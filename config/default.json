@@ -1,7 +1,10 @@
 {
+  "frontendURL": "https://localhost:3000",
   "mongoURI": "mongodb://127.0.0.1:27017/expensave",
   "jwtSecret": "expensave-secret-2020",
   "googleClientID": "953815629920-p575almipt0c5tci24koequq37q0ainj.apps.googleusercontent.com",
   "fbAppID": "1185057801877858",
-  "fbAppSecret": "9a336422a3b66e369cb5dfa5b5309583"
+  "fbAppSecret": "9a336422a3b66e369cb5dfa5b5309583",
+  "nodemailerEmail": "expensave.dev@gmail.com",
+  "nodemailerPassword": "expensave-2020"
 }

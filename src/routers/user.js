@@ -8,6 +8,8 @@ router.post('/users', userController.signUp);
 router.post('/users/login', userController.logIn);
 router.post('/users/login/google', userController.logInWithGoogle);
 router.post('/users/login/fb', userController.logInWithFacebook);
+router.post('/users/forgot', userController.forgotPassword);
+router.post('/users/reset/:token', userController.resetPassword);
 router.post('/users/logout', authenticate, userController.logOut);
 router.post('/users/logoutAll', authenticate, userController.logOutAllDevices);
 router.patch('/users/me', authenticate, userController.editProfile);
