@@ -6,8 +6,6 @@ const nodemailer = require('nodemailer');
 const { User } = require('../models');
 
 const getEmailTransporter = async () => {
-  const testAccount = await nodemailer.createTestAccount();
-
   // create reusable transporter object using the default SMTP transport
   const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -298,9 +296,12 @@ const forgotPassword = async (req, res) => {
     await emailer.sendMail({
       from: `"Expensave" <${config.get('nodemailerEmail')}>`, // sender address
       to: 'kenaroza@gmail.com', // list of receivers
-      subject: 'Hello ✔', // Subject line
-      text: 'Hello world?', // plain text body
-      html: '<b>Hello world?</b>', // html body
+      subject: 'Reset your password', // Subject line
+      html: `<p>Hi ${
+        user.firstName
+      },</p><p>Please follow this link to reset your password: ${config.get(
+        'frontendURL',
+      )}/reset-password/${user.resetPasswordToken}</p><p>Thanks!</p>`, // html body
     });
 
     res.send({ message: 'Password reset email successfully sent!' });
