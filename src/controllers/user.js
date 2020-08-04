@@ -301,10 +301,37 @@ const forgotPassword = async (req, res) => {
         user.firstName
       },</p><p>Please follow this link to reset your password: ${config.get(
         'frontendURL',
-      )}/reset-password/${user.resetPasswordToken}</p><p>Thanks!</p>`, // html body
+      )}/reset-password/${
+        user.resetPasswordToken
+      }. This link is valid for only an hour.</p><p>Thanks!</p>`, // html body
     });
 
     res.send({ message: 'Password reset email successfully sent!' });
+  } catch (e) {
+    console.log(e);
+    return res.status(500).send({ error: 'Internal Server Error' });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: req.params.token,
+      resetPasswordExpiry: { $gt: format(new Date(), 'yyyy-MM-dd HH:mm') },
+    });
+
+    if (!user) {
+      return res
+        .status(404)
+        .send({ error: 'Password reset token is invalid or has expired' });
+    }
+
+    user.password = req.body.password;
+    user.resetPasswordToken = '';
+    user.resetPasswordExpiry = '';
+
+    await user.save();
+    res.send({ message: 'Password changed successfully!' });
   } catch (e) {
     console.log(e);
     return res.status(500).send({ error: 'Internal Server Error' });
@@ -475,6 +502,7 @@ module.exports = {
   logInWithFacebook,
   signUp,
   forgotPassword,
+  resetPassword,
   logOut,
   logOutAllDevices,
   editProfile,
