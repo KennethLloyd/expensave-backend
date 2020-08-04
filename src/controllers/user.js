@@ -332,6 +332,25 @@ const forgotPassword = async (req, res) => {
   }
 };
 
+/**
+@api {post} /users/reset/:token Reset Password
+@apiVersion 1.0.0
+@apiName ResetPassword
+@apiGroup User
+
+@apiParamExample {json} Request-Example:
+{
+    "password": "54321aA!"
+}
+
+@apiSuccess {String} message Response message
+@apiSuccessExample {json} Success-Response:
+HTTP/1.1 200 OK
+{
+    "message": "Password changed successfully!"
+}
+*/
+
 const resetPassword = async (req, res) => {
   try {
     const user = await User.findOne({
