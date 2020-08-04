@@ -274,6 +274,25 @@ const signUp = async (req, res) => {
   }
 };
 
+/**
+@api {post} /users/forgot Forgot Password
+@apiVersion 1.0.0
+@apiName ForgotPassword
+@apiGroup User
+
+@apiParamExample {json} Request-Example:
+{
+    "email": "miyeon@cube.com"
+}
+
+@apiSuccess {String} message Response message
+@apiSuccessExample {json} Success-Response:
+HTTP/1.1 200 OK
+{
+    "message": "Password reset email successfully sent!"
+}
+*/
+
 const forgotPassword = async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email });
