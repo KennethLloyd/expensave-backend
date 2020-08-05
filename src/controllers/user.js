@@ -295,7 +295,7 @@ HTTP/1.1 200 OK
 
 const forgotPassword = async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.body.email });
+    const user = await User.findOne({ email: req.body.email, isNative: true });
 
     if (!user) {
       return res.status(404).send({ error: 'Email does not exist' });
