@@ -314,7 +314,7 @@ const forgotPassword = async (req, res) => {
     // send mail with defined transport object
     await emailer.sendMail({
       from: `"Expensave" <${config.get('nodemailerEmail')}>`, // sender address
-      to: 'kenaroza@gmail.com', // list of receivers
+      to: user.email, // list of receivers
       subject: 'Reset your password', // Subject line
       html: `<p>Hi ${
         user.firstName
