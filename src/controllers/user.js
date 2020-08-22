@@ -4,6 +4,7 @@ const axios = require('axios');
 const config = require('config');
 const nodemailer = require('nodemailer');
 const { User } = require('../models');
+const { insertInitialCategories } = require('./category');
 
 const getEmailTransporter = async () => {
   // create reusable transporter object using the default SMTP transport
@@ -128,6 +129,7 @@ const logInWithGoogle = async (req, res) => {
         });
 
         await user.save();
+        await insertInitialCategories(user._id);
       }
 
       const token = await user.generateAuthToken();
@@ -209,6 +211,7 @@ const logInWithFacebook = async (req, res) => {
         });
 
         await user.save();
+        await insertInitialCategories(user._id);
       }
 
       const token = await user.generateAuthToken();
@@ -268,6 +271,8 @@ const signUp = async (req, res) => {
     await newUser.save();
     const token = await newUser.generateAuthToken();
 
+    await insertInitialCategories(newUser._id);
+
     return res.status(201).send({ user: newUser, token });
   } catch (e) {
     return res.status(500).send({ error: 'Internal Server Error' });
@@ -295,7 +300,7 @@ HTTP/1.1 200 OK
 
 const forgotPassword = async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.body.email });
+    const user = await User.findOne({ email: req.body.email, isNative: true });
 
     if (!user) {
       return res.status(404).send({ error: 'Email does not exist' });
@@ -314,7 +319,7 @@ const forgotPassword = async (req, res) => {
     // send mail with defined transport object
     await emailer.sendMail({
       from: `"Expensave" <${config.get('nodemailerEmail')}>`, // sender address
-      to: 'kenaroza@gmail.com', // list of receivers
+      to: user.email, // list of receivers
       subject: 'Reset your password', // Subject line
       html: `<p>Hi ${
         user.firstName
