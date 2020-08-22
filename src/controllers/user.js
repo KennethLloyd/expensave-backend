@@ -4,6 +4,7 @@ const axios = require('axios');
 const config = require('config');
 const nodemailer = require('nodemailer');
 const { User } = require('../models');
+const { insertInitialCategories } = require('./category');
 
 const getEmailTransporter = async () => {
   // create reusable transporter object using the default SMTP transport
@@ -128,6 +129,7 @@ const logInWithGoogle = async (req, res) => {
         });
 
         await user.save();
+        await insertInitialCategories(user._id);
       }
 
       const token = await user.generateAuthToken();
@@ -209,6 +211,7 @@ const logInWithFacebook = async (req, res) => {
         });
 
         await user.save();
+        await insertInitialCategories(user._id);
       }
 
       const token = await user.generateAuthToken();
@@ -267,6 +270,8 @@ const signUp = async (req, res) => {
 
     await newUser.save();
     const token = await newUser.generateAuthToken();
+
+    await insertInitialCategories(newUser._id);
 
     return res.status(201).send({ user: newUser, token });
   } catch (e) {
