@@ -24,7 +24,10 @@ HTTP/1.1 201 Created
     "transaction": {
         "description": "Ubos na naman pera",
         "categories": [
-            "5f405e9c4405d334ad5c80e3"
+            {
+                "_id": "5f405e9c4405d334ad5c80e3",
+                "name": "bills"
+            }
         ],
         "_id": "5f4c4c9b6dd2c945d76ba3b2",
         "transactionDate": "2020-08-20 15:00",
@@ -41,12 +44,14 @@ HTTP/1.1 201 Created
 
 const addTransaction = async (req, res) => {
   try {
-    const transaction = new Transaction({
+    let transaction = await Transaction.create({
       ...req.body,
       owner: req.user._id,
     });
 
-    await transaction.save();
+    transaction = await transaction
+      .populate('categories', 'name')
+      .execPopulate();
 
     return res.status(201).send({ transaction });
   } catch (e) {
