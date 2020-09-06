@@ -10,4 +10,10 @@ router.post(
   transactionController.addTransaction,
 );
 
+router.get(
+  '/transactions',
+  authenticate,
+  transactionController.getAllTransactions,
+);
+
 module.exports = router;
