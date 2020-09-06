@@ -1,3 +1,4 @@
+const moment = require('moment');
 const { Transaction } = require('../models');
 
 /**
@@ -54,6 +55,60 @@ const addTransaction = async (req, res) => {
   }
 };
 
+const getAllTransactions = async (req, res) => {
+  const filter = {
+    owner: req.user._id,
+  };
+  const projection = null;
+  const options = {};
+
+  if (req.query.from && req.query.to) {
+    filter.transactionDate = {
+      $gte: req.query.from,
+      $lte: req.query.to,
+    };
+  } else {
+    const thisMonth = moment().format('YYYY-MM');
+    const nextMonth = moment().add(1, 'month').format('YYYY-MM');
+
+    filter.transactionDate = {
+      $gte: `${thisMonth}-01`,
+      $lte: `${nextMonth}-01`,
+    };
+  }
+
+  if (req.query.sortBy) {
+    let sortOrder = 'asc';
+
+    if (
+      req.query.sortOrder &&
+      ['asc', 'desc'].includes(req.query.sortOrder.toLowerCase())
+    ) {
+      sortOrder = req.query.sortOrder.toLowerCase();
+    }
+
+    options.sort = {
+      [req.query.sortBy]: sortOrder,
+    };
+  } else {
+    options.sort = {
+      entryDate: 'desc',
+    };
+  }
+
+  try {
+    const transactions = await Transaction.find(filter, projection, options)
+      .populate('categories', 'name')
+      .exec();
+
+    return res.send(transactions);
+  } catch (e) {
+    console.log(e);
+    return res.status(500).send({ error: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   addTransaction,
+  getAllTransactions,
 };
