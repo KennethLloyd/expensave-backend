@@ -1,9 +1,9 @@
-const authRouter = require('./auth');
+const userRouter = require('./user');
 const transactionRouter = require('./transaction');
 const categoryRouter = require('./category');
 
 module.exports = (app) => {
-  app.use(authRouter);
+  app.use(userRouter);
   app.use(transactionRouter);
   app.use(categoryRouter);
 };
