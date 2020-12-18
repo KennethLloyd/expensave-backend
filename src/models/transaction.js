@@ -27,12 +27,6 @@ const transactionSchema = mongoose.Schema(
       default: '',
       trim: true,
     },
-    categories: [
-      {
-        type: ObjectId,
-        ref: 'Category',
-      },
-    ],
     owner: {
       type: ObjectId,
       required: true,
