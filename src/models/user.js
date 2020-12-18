@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const moment = require('moment');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -60,7 +61,13 @@ const userSchema = new mongoose.Schema(
 userSchema.methods.generateAuthToken = async function () {
   const user = this;
 
-  const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET);
+  const token = jwt.sign(
+    {
+      _id: user._id.toString(),
+      expiration: moment().add(7, 'days').format('YYYY-MM-DD HH:mm'),
+    },
+    process.env.JWT_SECRET,
+  );
 
   return token;
 };

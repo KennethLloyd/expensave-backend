@@ -1,23 +1,21 @@
 const jwt = require('jsonwebtoken');
-const config = require('config');
-const { User } = require('../models');
+const moment = require('moment');
 
 const authenticate = async (req, res, next) => {
   try {
     const token = req.header('Authorization').replace('Bearer ', '');
-    const decoded = jwt.verify(token, config.get('jwtSecret'));
-    const user = await User.findOne({
-      _id: decoded._id,
-      'tokens.token': token,
-    }); // search a user with this ID and this token from his array of tokens
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (!user) {
-      throw new Error();
+    if (decoded.expiration < moment().format('YYYY-MM-DD HH:mm')) {
+      return res.status(401).send({ error: 'Token already expired' });
     }
 
     req.token = token;
-    req.user = user;
-    next();
+    req.user = {
+      _id: decoded._id,
+    };
+
+    return next();
   } catch (e) {
     res.status(401).send({ error: 'Please authenticate' });
   }
