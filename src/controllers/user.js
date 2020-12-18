@@ -1,27 +1,64 @@
 const { OAuth2Client } = require('google-auth-library');
-const { format, add } = require('date-fns');
 const axios = require('axios');
-const config = require('config');
-const nodemailer = require('nodemailer');
 const { User } = require('../models');
-const { insertInitialCategories } = require('./category');
+const { getEmailTransporter, err } = require('../helpers');
 
-const getEmailTransporter = async () => {
-  // create reusable transporter object using the default SMTP transport
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    secure: true, // true for 465, false for other ports
-    auth: {
-      user: config.get('nodemailerEmail'),
-      pass: config.get('nodemailerPassword'),
-    },
-    tls: {
-      rejectUnauthorized: false,
-    },
-  });
+/**
+@api {post} /auth/signup Sign Up
+@apiVersion 1.0.0
+@apiName SignUp
+@apiGroup Auth
 
-  return transporter;
+@apiParamExample {json} Request-Example:
+{
+  "firstName": "Miyeon",
+  "lastName": "Cho",
+  "email": "miyeon@cube.com",
+  "password": "12345aA!"
+}
+
+@apiSuccess {Object} user User details
+@apiSuccess {String} token Auth token
+@apiSuccessExample {json} Success-Response:
+HTTP/1.1 201 Created
+{
+    "user": {
+        "_id": "5f18d3e942e2bd44bcf1dd1f",
+        "firstName": "Miyeon",
+        "lastName": "Cho",
+        "email": "miyeon@cube.com",
+        "createdAt": "2020-07-23T00:03:53.910Z",
+        "updatedAt": "2020-07-23T00:03:53.960Z",
+        "__v": 1
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZjE4ZDNlOTQyZTJiZDQ0YmNmMWRkMWYiLCJpYXQiOjE1OTU0NjI2MzN9.ksS_P3da-Imj4WfErBK4wiCWZiGlsb2cqYLDv9Ny31E"
+}
+*/
+
+const signUp = async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.body.email }).lean();
+
+    if (user) {
+      throw err(400, 'Email already exists');
+    }
+
+    const newUser = new User(req.body);
+
+    await newUser.save();
+    const token = await newUser.generateAuthToken();
+
+    return res.status(201).send({ user: newUser, token });
+  } catch (e) {
+    console.log(e);
+
+    if (e.status) {
+      return res.status(e.status).send({ error: e.message });
+    }
+    return res.status(500).send({ error: 'Internal Server Error' });
+  }
 };
+
 
 /**
 @api {post} /users/login Log In User
@@ -60,7 +97,7 @@ const logIn = async (req, res) => {
       req.body.password,
     );
 
-    if (user === null) {
+    if (!user) {
       return res.status(400).send({ error: 'Invalid credentials' });
     }
 
@@ -222,59 +259,6 @@ const logInWithFacebook = async (req, res) => {
     }
   } catch (e) {
     console.log(e);
-    return res.status(500).send({ error: 'Internal Server Error' });
-  }
-};
-
-/**
-@api {post} /users Register User
-@apiVersion 1.0.0
-@apiName Register
-@apiGroup User
-
-@apiParamExample {json} Request-Example:
-{
-  "firstName": "Miyeon",
-  "lastName": "Cho",
-  "email": "miyeon@cube.com",
-  "password": "12345aA!"
-}
-
-@apiSuccess {Object} user User details
-@apiSuccess {String} token Auth token
-@apiSuccessExample {json} Success-Response:
-HTTP/1.1 201 Created
-{
-    "user": {
-        "_id": "5f18d3e942e2bd44bcf1dd1f",
-        "firstName": "Miyeon",
-        "lastName": "Cho",
-        "email": "miyeon@cube.com",
-        "createdAt": "2020-07-23T00:03:53.910Z",
-        "updatedAt": "2020-07-23T00:03:53.960Z",
-        "__v": 1
-    },
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1ZjE4ZDNlOTQyZTJiZDQ0YmNmMWRkMWYiLCJpYXQiOjE1OTU0NjI2MzN9.ksS_P3da-Imj4WfErBK4wiCWZiGlsb2cqYLDv9Ny31E"
-}
-*/
-
-const signUp = async (req, res) => {
-  try {
-    const user = await User.findOne({ email: req.body.email }).lean();
-
-    if (user) {
-      return res.status(400).send({ error: 'Email already exists' });
-    }
-
-    const newUser = new User(req.body);
-
-    await newUser.save();
-    const token = await newUser.generateAuthToken();
-
-    await insertInitialCategories(newUser._id);
-
-    return res.status(201).send({ user: newUser, token });
-  } catch (e) {
     return res.status(500).send({ error: 'Internal Server Error' });
   }
 };
