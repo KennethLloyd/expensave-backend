@@ -16,9 +16,9 @@ const getEmailTransporter = async () => {
   return transporter;
 };
 
-const err = (status_code, message) => {
+const err = (statusCode, message) => {
   const error = new Error(message);
-  error.status = status_code;
+  error.status = statusCode;
 
   return error;
 };

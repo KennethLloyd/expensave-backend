@@ -1,7 +1,7 @@
 const { OAuth2Client } = require('google-auth-library');
 const axios = require('axios');
 const { User } = require('../models');
-const { getEmailTransporter, err } = require('../helpers');
+const { getEmailTransporter, err } = require('../helpers/utils');
 
 /**
 @api {post} /auth/signup Sign Up
@@ -58,7 +58,6 @@ const signUp = async (req, res) => {
     return res.status(500).send({ error: 'Internal Server Error' });
   }
 };
-
 
 /**
 @api {post} /users/login Log In User
