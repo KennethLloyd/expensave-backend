@@ -9,12 +9,11 @@ const { Transaction } = require('../models');
 
 @apiParamExample {json} Request-Example:
 {   
-    "transactionDate": "2020-08-20 15:00",
+    "transactionDate": "2020-12-20 15:00",
     "transactionType": "Expense",
-    "name": "Bills",
-    "amount": "2500.00",
-    "description": "Ubos na naman pera",
-    "categories": ["5f405e9c4405d334ad5c80e3"]
+    "name": "Shoes",
+    "amount": "999.00",
+    "details": "Bought two new shoes for the price of one"
 }
 
 @apiSuccess {Object} transaction Transaction details
@@ -22,21 +21,15 @@ const { Transaction } = require('../models');
 HTTP/1.1 201 Created
 {
     "transaction": {
-        "description": "Ubos na naman pera",
-        "categories": [
-            {
-                "_id": "5f405e9c4405d334ad5c80e3",
-                "name": "bills"
-            }
-        ],
-        "_id": "5f4c4c9b6dd2c945d76ba3b2",
-        "transactionDate": "2020-08-20 15:00",
+        "details": "Bought two new shoes for the price of one",
+        "_id": "5fe2f5d8863af741e4eef3e4",
+        "transactionDate": "Sun Dec 20 2020 15:00:00 GMT+0800 (Taipei Standard Time)",
         "transactionType": "Expense",
-        "name": "Bills",
-        "amount": 2500,
-        "owner": "5f405e9c4405d334ad5c80de",
-        "createdAt": "2020-08-31T01:04:27.595Z",
-        "updatedAt": "2020-08-31T01:04:27.595Z",
+        "name": "Shoes",
+        "amount": 999,
+        "owner": "5fde8b69c229ae19c172b155",
+        "createdAt": "2020-12-23T07:46:32.670Z",
+        "updatedAt": "2020-12-23T07:46:32.670Z",
         "__v": 0
     }
 }
@@ -44,14 +37,10 @@ HTTP/1.1 201 Created
 
 const addTransaction = async (req, res) => {
   try {
-    let transaction = await Transaction.create({
+    const transaction = await Transaction.create({
       ...req.body,
       owner: req.user._id,
     });
-
-    transaction = await transaction
-      .populate('categories', 'name')
-      .execPopulate();
 
     return res.status(201).send({ transaction });
   } catch (e) {

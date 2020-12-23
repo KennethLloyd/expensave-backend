@@ -22,7 +22,7 @@ const transactionSchema = mongoose.Schema(
       type: Number,
       required: true,
     },
-    description: {
+    details: {
       type: String,
       default: '',
       trim: true,

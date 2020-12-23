@@ -9,7 +9,7 @@ const addTransaction = async (req, res, next) => {
     transactionType: Joi.string().valid('Income', 'Expense').required(),
     name: Joi.string().required(),
     amount: Joi.number().required(),
-    description: Joi.string().empty(''),
+    details: Joi.string().empty(''),
   });
 
   try {

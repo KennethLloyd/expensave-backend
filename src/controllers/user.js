@@ -97,7 +97,7 @@ const logIn = async (req, res) => {
     );
 
     if (!user) {
-      return res.status(400).send({ error: 'Invalid credentials' });
+      throw err(400, 'Invalid credentials');
     }
 
     const token = await user.generateAuthToken();
@@ -105,6 +105,10 @@ const logIn = async (req, res) => {
     return res.send({ user, token });
   } catch (e) {
     console.log(e);
+
+    if (e.status) {
+      return res.status(e.status).send({ error: e.message });
+    }
     return res.status(500).send({ error: 'Internal Server Error' });
   }
 };
