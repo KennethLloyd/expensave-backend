@@ -2,7 +2,7 @@ const moment = require('moment');
 const { Transaction } = require('../models');
 
 /**
-@api {post} /transactions Create Transaction
+@api {post} /transactions CREATE Transaction
 @apiVersion 1.0.0
 @apiName CreateTransaction
 @apiGroup Transaction
@@ -49,6 +49,35 @@ const addTransaction = async (req, res) => {
   }
 };
 
+/**
+@api {get} /transactions GET ALL Transactions
+@apiVersion 1.0.0
+@apiName GetAllTransactions
+@apiGroup Transaction
+
+@apiParam [from] From Date
+@apiParam [to] To Date
+@apiParam [sortBy] Sort By
+@apiParam [sortOrder] Sort Order
+
+@apiSuccessExample {json} Success-Response:
+HTTP/1.1 200 OK
+[
+    {
+        "details": "Bought two new shoes for the price of one",
+        "_id": "5fe2f5d8863af741e4eef3e4",
+        "transactionDate": "Sun Dec 20 2020 15:00:00 GMT+0800 (Taipei Standard Time)",
+        "transactionType": "Expense",
+        "name": "Shoes",
+        "amount": 999,
+        "owner": "5fde8b69c229ae19c172b155",
+        "createdAt": "2020-12-23T07:46:32.670Z",
+        "updatedAt": "2020-12-23T07:46:32.670Z",
+        "__v": 0
+    }
+]
+*/
+
 const getAllTransactions = async (req, res) => {
   const filter = {
     owner: req.user._id,
@@ -86,14 +115,12 @@ const getAllTransactions = async (req, res) => {
     };
   } else {
     options.sort = {
-      entryDate: 'desc',
+      transactionDate: 'desc',
     };
   }
 
   try {
-    const transactions = await Transaction.find(filter, projection, options)
-      .populate('categories', 'name')
-      .exec();
+    const transactions = await Transaction.find(filter, projection, options);
 
     return res.send(transactions);
   } catch (e) {
