@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const mongoose = require('mongoose');
 
 const getEmailTransporter = async () => {
   const transporter = nodemailer.createTransport({
@@ -23,7 +24,10 @@ const err = (statusCode, message) => {
   return error;
 };
 
+const isValidID = (id) => mongoose.Types.ObjectId.isValid(id);
+
 module.exports = {
   getEmailTransporter,
   err,
+  isValidID,
 };

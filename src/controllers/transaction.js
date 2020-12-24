@@ -1,5 +1,6 @@
 const moment = require('moment');
 const { Transaction } = require('../models');
+const { err, isValidID } = require('../helpers/utils');
 
 /**
 @api {post} /transactions CREATE Transaction
@@ -129,7 +130,59 @@ const getAllTransactions = async (req, res) => {
   }
 };
 
+/**
+@api {delete} /transactions/:_id DELETE Transaction
+@apiVersion 1.0.0
+@apiName DeleteTransaction
+@apiGroup Transaction
+
+@apiSuccessExample {json} Success-Response:
+HTTP/1.1 200 OK
+{
+    "message": "Successfully deleted transaction",
+    "transaction": {
+        "details": "Bought two new shoes for the price of one",
+        "_id": "5fe2f5d8863af741e4eef3e4",
+        "transactionDate": "Sun Dec 20 2020 15:00:00 GMT+0800 (Taipei Standard Time)",
+        "transactionType": "Expense",
+        "name": "Shoes",
+        "amount": 999,
+        "owner": "5fde8b69c229ae19c172b155",
+        "createdAt": "2020-12-23T07:46:32.670Z",
+        "updatedAt": "2020-12-23T07:46:32.670Z",
+        "__v": 0
+    }
+}
+*/
+
+const deleteTransaction = async (req, res) => {
+  try {
+    const { _id } = req.params;
+
+    if (!isValidID(_id)) throw err(400, 'Invalid ID');
+
+    const transaction = await Transaction.findById(_id);
+
+    if (!transaction) throw err(404, 'Transaction not found');
+
+    await Transaction.deleteOne({ _id });
+
+    return res.send({
+      message: 'Successfully deleted transaction',
+      transaction,
+    });
+  } catch (e) {
+    console.log(e);
+
+    if (e.status) {
+      return res.status(e.status).send({ error: e.message });
+    }
+    return res.status(500).send({ error: 'Internal Server Error' });
+  }
+};
+
 module.exports = {
   addTransaction,
   getAllTransactions,
+  deleteTransaction,
 };

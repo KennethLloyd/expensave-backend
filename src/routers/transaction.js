@@ -19,4 +19,10 @@ router.get(
   transactionController.getAllTransactions,
 );
 
+router.delete(
+  '/transactions/:_id',
+  authenticate,
+  transactionController.deleteTransaction,
+);
+
 module.exports = router;
