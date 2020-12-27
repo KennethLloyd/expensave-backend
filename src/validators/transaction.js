@@ -1,5 +1,6 @@
 const JoiBase = require('joi');
 const JoiDate = require('@hapi/joi-date');
+const moment = require('moment');
 
 const Joi = JoiBase.extend(JoiDate);
 
@@ -15,6 +16,9 @@ const addTransaction = async (req, res, next) => {
   try {
     const body = await bodySchema.validateAsync(req.body);
     req.body = body;
+    req.body.transactionDate = moment(req.body.transactionDate).format(
+      'YYYY-MM-DD HH:mm',
+    );
     return next();
   } catch (err) {
     return res.status(400).send({

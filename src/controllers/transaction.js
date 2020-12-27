@@ -83,13 +83,14 @@ const getAllTransactions = async (req, res) => {
   const filter = {
     owner: req.user._id,
   };
+
   const projection = null;
   const options = {};
 
   if (req.query.from && req.query.to) {
     filter.transactionDate = {
-      $gte: req.query.from,
-      $lte: req.query.to,
+      $gte: moment(req.query.from).format('YYYY-MM-DD'),
+      $lte: moment(req.query.to).format('YYYY-MM-DD'),
     };
   } else {
     const thisMonth = moment().format('YYYY-MM');
