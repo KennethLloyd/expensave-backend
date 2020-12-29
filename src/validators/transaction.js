@@ -33,6 +33,7 @@ const getAllTransactions = async (req, res, next) => {
     sortOrder: Joi.string().uppercase().valid('ASC', 'DESC').empty(''),
     from: Joi.date().format('YYYY-MM-DD').empty(''),
     to: Joi.date().format('YYYY-MM-DD').empty(''),
+    transactionType: Joi.string().valid('Income', 'Expense').empty(''),
   });
 
   try {

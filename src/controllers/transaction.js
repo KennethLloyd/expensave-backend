@@ -60,6 +60,7 @@ const addTransaction = async (req, res) => {
 @apiParam [to] To Date
 @apiParam [sortBy] Sort By
 @apiParam [sortOrder] Sort Order
+@apiParam [transactionType] Income or Expense filter
 
 @apiSuccessExample {json} Success-Response:
 HTTP/1.1 200 OK
@@ -119,6 +120,10 @@ const getAllTransactions = async (req, res) => {
     options.sort = {
       transactionDate: 'desc',
     };
+  }
+
+  if (req.query.transactionType) {
+    filter.transactionType = req.query.transactionType;
   }
 
   try {
