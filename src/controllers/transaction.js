@@ -129,7 +129,27 @@ const getAllTransactions = async (req, res) => {
   try {
     const transactions = await Transaction.find(filter, projection, options);
 
-    return res.send(transactions);
+    const totalIncome = transactions.reduce((total, transaction) => {
+      if (transaction.transactionType === 'Income') {
+        total += transaction.amount;
+      }
+
+      return total;
+    }, 0);
+
+    const totalExpenses = transactions.reduce((total, transaction) => {
+      if (transaction.transactionType === 'Expense') {
+        total += transaction.amount;
+      }
+
+      return total;
+    }, 0);
+
+    return res.send({
+      transactions,
+      totalIncome,
+      totalExpenses,
+    });
   } catch (e) {
     console.log(e);
     return res.status(500).send({ error: 'Internal Server Error' });
