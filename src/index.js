@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-require('./db/mongoose'); // no variable because we just want the function to execute
+require('dotenv').config()
+require('./db/mongoose');
 
 const app = express();
 const port = process.env.PORT || 3001;

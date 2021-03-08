@@ -15,31 +15,31 @@
     "title": "API Documentation"
   },
   "keywords": [
-    "api",
-    "express",
-    "jwt",
-    "mongoose",
-    "node",
-    "restful"
+    "tracker",
+    "savings",
+    "money",
+    "expense",
+    "finance"
   ],
-  "author": "",
+  "author": "Kenneth Lloyd Verastigue",
   "license": "ISC",
   "dependencies": {
+    "@hapi/joi-date": "^2.0.1",
     "apidoc": "^0.24.0",
     "axios": "^0.19.2",
     "bcryptjs": "^2.4.3",
     "config": "^3.3.1",
     "cors": "^2.8.5",
-    "date-fns": "^2.15.0",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "google-auth-library": "^6.0.5",
+    "joi": "^17.2.1",
     "jsonwebtoken": "^8.5.1",
     "juice": "^7.0.0",
     "moment": "^2.27.0",
     "mongodb": "^3.5.8",
     "mongoose": "^5.9.17",
-    "nodemailer": "^6.4.11",
-    "validator": "^13.0.0"
+    "nodemailer": "^6.4.11"
   },
   "devDependencies": {
     "eslint": "^7.2.0",

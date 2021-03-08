@@ -22,17 +22,11 @@ const transactionSchema = mongoose.Schema(
       type: Number,
       required: true,
     },
-    description: {
+    details: {
       type: String,
       default: '',
       trim: true,
     },
-    categories: [
-      {
-        type: ObjectId,
-        ref: 'Category',
-      },
-    ],
     owner: {
       type: ObjectId,
       required: true,

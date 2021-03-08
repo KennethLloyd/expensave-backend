@@ -1,18 +1,30 @@
 const express = require('express');
-const authenticate = require('../middleware/authenticate');
 const { userController } = require('../controllers');
+const { userValidator } = require('../validators');
 
 const router = new express.Router();
 
-router.post('/users', userController.signUp);
-router.post('/users/login', userController.logIn);
-router.post('/users/login/google', userController.logInWithGoogle);
-router.post('/users/login/fb', userController.logInWithFacebook);
-router.post('/users/forgot', userController.forgotPassword);
-router.post('/users/reset/:token', userController.resetPassword);
-router.post('/users/logout', authenticate, userController.logOut);
-router.post('/users/logoutAll', authenticate, userController.logOutAllDevices);
-router.patch('/users/me', authenticate, userController.editProfile);
-router.delete('/users/me', authenticate, userController.deleteAccount);
+router.post('/auth/signup', userValidator.signUp, userController.signUp);
+router.post('/auth/login', userValidator.logIn, userController.logIn);
+router.post(
+  '/auth/login/google',
+  userValidator.logInWithGoogle,
+  userController.logInWithGoogle,
+);
+router.post(
+  '/auth/login/fb',
+  userValidator.logInWithFacebook,
+  userController.logInWithFacebook,
+);
+router.post(
+  '/auth/forgot-password',
+  userValidator.forgotPassword,
+  userController.forgotPassword,
+);
+router.post(
+  '/auth/reset-password',
+  userValidator.resetPassword,
+  userController.resetPassword,
+);
 
 module.exports = router;
